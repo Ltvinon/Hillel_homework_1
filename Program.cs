@@ -1,10 +1,11 @@
 ﻿namespace Hillel_homework_1
 {
-    internal class Program
+    internal partial class Program
     {
-        static void Main(string[] args)
+        static void Main(string[] _)
         {
-            Console.WriteLine("Hello, World!");
+            ConsoleCalc consoleCalc = new();
+            consoleCalc.RunCalc();
         }
     }
 }

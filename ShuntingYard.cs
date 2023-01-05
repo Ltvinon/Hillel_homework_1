@@ -23,12 +23,73 @@ namespace Hillel_homework_1
 
         public void TestCompute(string inputString)
         {
+            //Стак временного хранения токенов операторов.
+            Stack<Token> operatorsStack = new Stack<Token>();
+            //Выходной стак токенов в формате обратной польской записи.
+            Stack<Token> outputStack = new Stack<Token>();
+
             //Разбитие входной строки на масив подстрок (из операций, чисел, скобок) используя патерн регулярного выражения.
             var numbsAndOperationArray = Regex.Split(inputString, @"([\(\)\+\-\*\/])");
 
             var tokensList = Tokenize(numbsAndOperationArray);
             MathExpressionWritingCheck(tokensList);
             tokensList = UnaryMinusImplementation(tokensList);
+
+            //Shunting Yard алгоритм.
+            //https://en.wikipedia.org/wiki/Shunting_yard_algorithm
+            foreach (var token in tokensList)
+            {
+                if (token.GetType() == typeof(Number))
+                {
+                    outputStack.Push(token);
+                }
+                else if (token.GetType() == typeof(Operation))
+                {
+                    while (operatorsStack.TryPeek(out Token lastOperatorToken)
+                        && (lastOperatorToken is not Parenthesis //lastOperatorToken.GetType() != typeof(Parenthesis)
+                        ||
+                        (lastOperatorToken is Parenthesis parenthesis//lastOperatorToken.GetType() == typeof(Parenthesis)
+                        && parenthesis.Orientation != ParenthesisOrientation.Left))
+                        && lastOperatorToken.Precedence >= token.Precedence)
+                    {
+                        outputStack.Push(operatorsStack.Pop());
+                    }
+                    operatorsStack.Push(token);
+                }
+                else if (token is Parenthesis parenthesis1 && parenthesis1.Orientation == ParenthesisOrientation.Left)
+                {
+                    operatorsStack.Push(token);
+                }
+                else if (token is Parenthesis parenthesis2 && parenthesis2.Orientation == ParenthesisOrientation.Right)
+                {
+                    while (operatorsStack.TryPeek(out Token lastOperatorToken)
+                        && (lastOperatorToken is not Parenthesis //lastOperatorToken.GetType() != typeof(Parenthesis)
+                        ||
+                        (lastOperatorToken is Parenthesis parenthesis3//lastOperatorToken.GetType() == typeof(Parenthesis)
+                        && parenthesis3.Orientation != ParenthesisOrientation.Left)))//((Parenthesis)lastOperatorToken).Orientation != ParenthesisOrientation.Left)))
+                    {
+                        outputStack.Push(operatorsStack.Pop());
+                    }
+                    if (operatorsStack.Count == 0)
+                    {
+                        throw new Exception("Mismatched parentheses.");
+                    }
+                    else if (operatorsStack.Peek() is Parenthesis parenthesis4
+                        && parenthesis4.Orientation == ParenthesisOrientation.Left)
+                    {
+                        _ = operatorsStack.Pop();
+                    }
+                }
+            }
+            //Переносим все оставшиеся операции в основной стак.
+            while (operatorsStack.Count > 0)
+            {
+                if (operatorsStack.Peek().GetType() == typeof(Parenthesis))
+                {
+                    throw new Exception("Mismatched parentheses.");
+                }
+                outputStack.Push(operatorsStack.Pop());
+            }
         }
 
         /// <summary>

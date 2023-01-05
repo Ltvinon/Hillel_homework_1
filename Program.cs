@@ -26,6 +26,11 @@ namespace Hillel_homework_1
                     {
                         throw new Exception("Invalid characters in input string");
                     }
+
+                    //Создание екземпляра класса калькулятора.
+                    CalculatorFormString shuntingYard = new CalculatorFormString();
+
+                    shuntingYard.TestCompute(inputText);
                 }
                 catch (Exception ex)
                 {

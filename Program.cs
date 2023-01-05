@@ -9,7 +9,7 @@ namespace Hillel_homework_1
             Console.WriteLine($"One line calculator.{Environment.NewLine}" +
                 $"Enter full math expresion using this allowed operation: \"+\", \"-\", \"*\", \"/\"." +
                 $"{Environment.NewLine}You can also use parentheses: \"(\", \")\" and unary minus.");
-            
+
             //Бесконечный цикл для повторных вычислений.
             while (true)
             {

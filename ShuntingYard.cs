@@ -253,7 +253,7 @@ namespace Hillel_homework_1
             for (int i = 0; i < tokensList.Count; i++)
             {
                 var token = tokensList[i];
-                if (token.GetType() == typeof(Operation) 
+                if (token.GetType() == typeof(Operation)
                     && ((Operation)token).Name == OperationName.Substraction)
                 {
                     indexesOfMinus.Add(i);

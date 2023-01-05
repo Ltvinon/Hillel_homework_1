@@ -23,10 +23,18 @@ namespace Hillel_homework_1
 
         public void TestCompute(string inputString)
         {
-            //Разбитие входной строки на масив подстрок (из операций, чисел, скобок) используя патерн регулярного выражения.
-            var numbsAndOperationArray = Regex.Split(inputString, @"([\(\)\+\-\*\/])");
+            var tokensList = Tokenize(SplitInputString(inputString));
+            MathExpressionWritingCheck(tokensList);
+        }
 
-            var tokensList = Tokenize(numbsAndOperationArray);
+        /// <summary>
+        ///Разбитие входной строки на масив подстрок (из операций, чисел, скобок) используя патерн регулярного выражения.
+        /// </summary>
+        /// <param name="inputString"></param>
+        /// <returns>Масив подстрок (из операций, чисел, скобок)</returns>
+        public string[] SplitInputString (string inputString)
+        {
+            return Regex.Split(inputString, @"([\(\)\+\-\*\/])").Where(x => x != String.Empty).ToArray();
         }
 
         /// <summary>
@@ -66,6 +74,94 @@ namespace Hillel_homework_1
                 }
             }
             return tokens;
+        }
+
+        /// <summary>
+        /// Проверка на ошибки в записи математического выражения 
+        /// (кроме тех, которые проверяются в ходе выполнения Shunting yard алгоритма).
+        /// </summary>
+        /// <param name="tokensList">Список токенов операций, чисел и др.</param>
+        /// <exception cref="Exception"></exception>
+        public void MathExpressionWritingCheck(List<Token> tokensList)
+        {
+            //Знак операции в начале строки (кроме унарного минуса).
+            if (tokensList[0] is Operation operation
+                && (operation.Name != OperationName.Substraction
+                ||
+                //Особый вариант проверки для унарного минуса.
+                (tokensList[1] is Operation)))
+            {
+                throw new OperationSignAtLineStartException();
+            }
+
+            //Знак операции в конце строки.
+            else if (tokensList[tokensList.Count - 1] is Operation)
+            {
+                throw new OperationSignAtLineEndException();
+            }
+
+            for (int i = 1; i < tokensList.Count; i++)
+            {
+                //Token token = tokensList[i];
+                if (tokensList[i] is Operation token)
+                {
+                    //Несколько знаков операций подряд (кроме унарного минуса).
+                    if ((i != 0
+                        && tokensList[i - 1] is Operation
+                        && token.Name != OperationName.Substraction)
+                        ||
+                        //Особый вариант проверки для унарного минуса.
+                        (i > 1
+                        && token.Name == OperationName.Substraction
+                        && tokensList[i - 1] is Operation
+                        && tokensList[i - 2] is Operation))
+                    {
+                        throw new SeveralOperationInARowException();
+                    }
+
+                    //Знак операции сразу после открывающей скобки (кроме унарного минуса).
+                    else if (tokensList[i - 1] is Parenthesis parenthesis1
+                        && parenthesis1.Orientation == ParenthesisOrientation.Left
+                        && token.Name != OperationName.Substraction)
+                    {
+                        throw new ParenthesisException("Operation sign right after opening parenthesis.");
+                    }
+
+                    //Знак операции сразу перед закрывающей скобкой.
+                    else if (i != tokensList.Count - 1
+                        && tokensList[i + 1] is Parenthesis parenthesis2
+                        && parenthesis2.Orientation == ParenthesisOrientation.Right)
+                    {
+                        throw new ParenthesisException("Operation sign right before closing parenthesis.");
+                    }
+                }
+                else if (tokensList[i] is Parenthesis parenthesis)
+                {
+                    if (parenthesis.Orientation == ParenthesisOrientation.Left)
+                    {
+                        //Отсутствует знак операции сразу перед открывающей скобкой.
+                        if (tokensList[i - 1] is Number)
+                        {
+                            throw new ParenthesisException("No operation sign before opening parenthesis.");
+                        }
+
+                        //Отсутствует знак операции между закрывающей и открывающей скобкой.
+                        else if (tokensList[i - 1] is Parenthesis parenthesis2
+                            && parenthesis2.Orientation == ParenthesisOrientation.Right)
+                        {
+                            throw new ParenthesisException("No operation sign between closing and opening parentheses or mismatched parentheses.");
+                        }
+                    }
+
+                    //Пустые скобки
+                    else if (parenthesis.Orientation == ParenthesisOrientation.Right
+                        && tokensList?[i - 1] is Parenthesis parenthesis3
+                        && parenthesis3.Orientation == ParenthesisOrientation.Left)
+                    {
+                        throw new ParenthesisException("Empty parentheses.");
+                    }
+                }
+            }
         }
     }
 }

@@ -30,7 +30,8 @@ namespace Hillel_homework_1
                     //Создание екземпляра класса калькулятора.
                     CalculatorFormString shuntingYard = new CalculatorFormString();
 
-                    shuntingYard.TestCompute(inputText);
+                    //Вызов метода вычисления и вывод результата вычислений (если оно было успешно) в консоль.
+                    Console.WriteLine($"Result: {shuntingYard.Compute(inputText)}");
                 }
                 catch (Exception ex)
                 {

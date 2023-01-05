@@ -21,7 +21,12 @@ namespace Hillel_homework_1
         {
         }
 
-        public void TestCompute(string inputString)
+        /// <summary>
+        /// Парсинг математического выражения и вычисление результата.
+        /// </summary>
+        /// <param name="inputString">Математическое выражение в формате строки.</param>
+        /// <returns>Результат вычислений.</returns>
+        public double Compute(string inputString)
         {
             //Стак временного хранения токенов операторов.
             Stack<Token> operatorsStack = new Stack<Token>();
@@ -90,6 +95,22 @@ namespace Hillel_homework_1
                 }
                 outputStack.Push(operatorsStack.Pop());
             }
+
+            //Reverse Polish notation. Массив полученый после выполнения алгоритма Shunting yard.
+            //Представлет из себя математическое выражение, разбитое на элементы списка, в котором операнды расположены перед знаками операций.
+            var rpn = outputStack.Reverse().ToList();
+
+            //Цикл вычисления конечного результата. Происходит по приципу нахождения в массиве знака операции
+            //и выполнение соответсвущего ему вычислений над двумя предшедствующими значениями.
+            //Оставшийся элемент в списке является искомым результатом вычислений.
+            while (rpn.Count != 1)
+            {
+                int index = rpn.FindIndex(x => x is Operation);
+                ((Number)rpn[index - 1]).Value = ((Operation)rpn[index]).Compute(((Number)rpn[index - 2]).Value, ((Number)rpn[index - 1]).Value);
+                rpn.RemoveAt(index);
+                rpn.RemoveAt(index - 2);
+            }
+            return ((Number)rpn[0]).Value;
         }
 
         /// <summary>

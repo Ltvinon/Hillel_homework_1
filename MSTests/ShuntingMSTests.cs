@@ -116,5 +116,16 @@ namespace MSTests
 
             Assert.IsTrue(rezult.Any(x => x is Number number && number.Value == expectedRezult));
         }
+
+        [TestMethod]
+        [DataRow("3+3)+3")]
+        [DataRow("(3+3")]
+        [ExpectedException(typeof(ParenthesisException))]
+        public void ShuntingYardAlgorithm_ExpectedParenthesisException(string inputText)
+        {
+            var tokens = _calcFromString.Tokenize(_calcFromString.SplitInputString(inputText));
+
+            _calcFromString.ShuntingYardAlgorithm(tokens);
+        }
     }
 }

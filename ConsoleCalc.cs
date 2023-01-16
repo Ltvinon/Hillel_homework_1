@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Hillel_homework_1
 {
@@ -21,10 +22,8 @@ namespace Hillel_homework_1
         {
             try
             {
-                //Строка содержащая мат. выражение для последующего вычисления.
-                string rezult = ReadAndCalculate(Console.ReadLine());
-
-                Console.WriteLine($"{rezult}");
+                //Вывод результата вычислений(если оно было успешно) в консоль
+                Console.WriteLine($"Result: {ReadAndCalculate(Console.ReadLine()).ToString(CultureInfo.InvariantCulture)}");
             }
             catch (Exception ex)
             {
@@ -37,7 +36,7 @@ namespace Hillel_homework_1
             }
         }
 
-        public string ReadAndCalculate(string inputText)
+        public double ReadAndCalculate(string inputText)
         {
             //Удаление всех пробелов из входной строки.
             inputText = Regex.Replace(inputText, @"\s+", "");
@@ -48,10 +47,11 @@ namespace Hillel_homework_1
                 throw new CalcInvalidInputException();
             }
 
-            CalculatorFormString calculatorFormString = new CalculatorFormString();
-            calculatorFormString.TestCompute(inputText);
+            //Создание екземпляра класса калькулятора.
+            CalculatorFormString shuntingYard = new CalculatorFormString();
 
-            return inputText;
+            //Вызов метода вычисления .
+            return shuntingYard.Compute(inputText);
         }
     }
 }

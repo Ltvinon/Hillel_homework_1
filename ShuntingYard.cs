@@ -21,12 +21,39 @@ namespace Hillel_homework_1
         {
         }
 
-        public void TestCompute(string inputString)
+        /// <summary>
+        /// Парсинг математического выражения и вычисление результата.
+        /// </summary>
+        /// <param name="inputString">Математическое выражение в формате строки.</param>
+        /// <returns>Результат вычислений.</returns>
+        public double Compute(string inputString)
         {
             var tokensList = Tokenize(SplitInputString(inputString));
             MathExpressionWritingCheck(tokensList);
             tokensList = UnaryMinusImplementation(tokensList);
-            var outpuStack = ShuntingYardAlgorithm(tokensList);
+            var outputStack = ShuntingYardAlgorithm(tokensList);
+            return ReversePolishNotationCompute(outputStack.Reverse().ToList());
+        }
+
+        /// <summary>
+        ///Reverse Polish notation. Массив полученый после выполнения алгоритма Shunting yard.
+        ///Представлет из себя математическое выражение, разбитое на элементы списка, в котором операнды расположены перед знаками операций.
+        ///Цикл вычисления конечного результата происходит по приципу нахождения в массиве знака операции
+        ///и выполнение соответсвущего ему вычислений над двумя предшедствующими значениями.
+        ///Оставшийся элемент в списке является искомым результатом вычислений.
+        /// </summary>
+        /// <param name="tokensList"></param>
+        /// <returns></returns>
+        public double ReversePolishNotationCompute(List<Token> tokensList)
+        {
+            while (tokensList.Count != 1)
+            {
+                int index = tokensList.FindIndex(x => x is Operation);
+                ((Number)tokensList[index - 1]).Value = ((Operation)tokensList[index]).Compute(((Number)tokensList[index - 2]).Value, ((Number)tokensList[index - 1]).Value);
+                tokensList.RemoveAt(index);
+                tokensList.RemoveAt(index - 2);
+            }
+            return ((Number)tokensList[0]).Value;
         }
 
         /// <summary>
@@ -34,7 +61,6 @@ namespace Hillel_homework_1
         /// </summary>
         /// <param name="tokensList"></param>
         /// <returns>Cтак токенов в формате обратной польской записи.</returns>
-        /// <exception cref="ParenthesisException"></exception>
         public Stack<Token> ShuntingYardAlgorithm (List<Token> tokensList)
         {
             //Стак временного хранения токенов операторов.
@@ -106,6 +132,7 @@ namespace Hillel_homework_1
         public string[] SplitInputString (string inputString)
         {
             return Regex.Split(inputString, @"([\(\)\+\-\*\/])").Where(x => x != String.Empty).ToArray();
+
         }
 
         /// <summary>
@@ -113,7 +140,6 @@ namespace Hillel_homework_1
         /// </summary>
         /// <param name="numbsAndOperationArray">Массив елементов мат. выражения (числа, операциий и т.д.) в строчном формате.</param>
         /// <returns></returns>
-        /// <exception cref="Exception"></exception>
         public List<Token> Tokenize(string[] numbsAndOperationArray)
         {
             List<Token> tokens = new List<Token>();
@@ -152,7 +178,6 @@ namespace Hillel_homework_1
         /// (кроме тех, которые проверяются в ходе выполнения Shunting yard алгоритма).
         /// </summary>
         /// <param name="tokensList">Список токенов операций, чисел и др.</param>
-        /// <exception cref="Exception"></exception>
         public void MathExpressionWritingCheck(List<Token> tokensList)
         {
             //Знак операции в начале строки (кроме унарного минуса).

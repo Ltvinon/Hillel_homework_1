@@ -25,6 +25,7 @@ namespace Hillel_homework_1
         {
             var tokensList = Tokenize(SplitInputString(inputString));
             MathExpressionWritingCheck(tokensList);
+            tokensList = UnaryMinusImplementation(tokensList);
         }
 
         /// <summary>
@@ -162,6 +163,55 @@ namespace Hillel_homework_1
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Внедрение унарного минуса.
+        /// </summary>
+        /// <param name="tokensList">Список токенов операций, чисел и др.</param>
+        /// <returns>Возвращает модифицированный список с отрицательными (если был найден унарный минус) числами.</returns>
+        public List<Token> UnaryMinusImplementation(List<Token> tokensList)
+        {
+            List<int> indexesOfMinus = new List<int>();
+
+            //Ищем индексы всех вхождений знака "минус".
+            for (int i = 0; i < tokensList.Count; i++)
+            {
+                var token = tokensList[i];
+                if (token.GetType() == typeof(Operation)
+                    && ((Operation)token).Name == OperationName.Substraction)
+                {
+                    indexesOfMinus.Add(i);
+                }
+            }
+            //Проверка на то, что знак "минус" является унарным.
+            foreach (int index in indexesOfMinus.ToList())
+            {
+                //В случае подтверждения условий "унарности", меняем полярность значения.
+                if (index == 0 && tokensList[index + 1].GetType() == typeof(Number))
+                {
+                    ((Number)tokensList[index + 1]).Value *= -1;
+                }
+                else if (index > 0
+                    && tokensList[index - 1].GetType() != typeof(Number)
+                    && tokensList[index + 1].GetType() == typeof(Number))
+                {
+                    ((Number)tokensList[index + 1]).Value *= -1;
+                }
+                //Удаляем из списка индексы не унарных минусов.
+                else
+                {
+                    indexesOfMinus.Remove(index);
+                }
+            }
+            //Инвертируем список индексов, чтобы при удалении элементов из списка токенов по индексу избежать сдвигов.
+            indexesOfMinus.Reverse();
+            //Удаляем из списка токенов все вхождения унарных минусов.
+            foreach (int index in indexesOfMinus)
+            {
+                tokensList.RemoveAt(index);
+            }
+            return tokensList;
         }
     }
 }

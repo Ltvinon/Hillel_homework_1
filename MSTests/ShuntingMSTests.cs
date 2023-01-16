@@ -104,5 +104,17 @@ namespace MSTests
 
             _calcFromString.MathExpressionWritingCheck(tokens);
         }
+
+        [TestMethod]
+        [DataRow("3*-3", -3)]
+        [DataRow("-3", -3)]
+        public void Test_UnaryMinusImplementation_Output(string inputText, double expectedRezult)
+        {
+            var tokens = _calcFromString.Tokenize(_calcFromString.SplitInputString(inputText));
+
+            var rezult = _calcFromString.UnaryMinusImplementation(tokens);
+
+            Assert.IsTrue(rezult.Any(x => x is Number number && number.Value == expectedRezult));
+        }
     }
 }

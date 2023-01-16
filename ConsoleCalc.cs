@@ -48,6 +48,9 @@ namespace Hillel_homework_1
                 throw new CalcInvalidInputException();
             }
 
+            CalculatorFormString calculatorFormString = new CalculatorFormString();
+            calculatorFormString.TestCompute(inputText);
+
             return inputText;
         }
     }

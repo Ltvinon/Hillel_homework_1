@@ -62,7 +62,6 @@
             _name = operationName;
             Compute = compute;
         }
-
     }
 
     /// <summary>
@@ -114,8 +113,5 @@
         {
             _orientation = orientation;
         }
-
-
     }
-
 }

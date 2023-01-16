@@ -14,7 +14,7 @@ namespace Hillel_homework_1
             {"+", new Operation(2, OperationName.Addition, (x, y) => { return x + y; } ) },
             {"-", new Operation(2, OperationName.Substraction, (x, y) => { return x - y; } ) },
             {"*", new Operation(3, OperationName.Multiply, (x, y) => { return x * y; } ) },
-            {"/", new Operation(3, OperationName.Division, (x, y) => { if (y == 0) throw new Exception("Division by zero."); return x / y; } ) },
+            {"/", new Operation(3, OperationName.Division, (x, y) => { if (y == 0) throw new DivideByZeroException("Division by zero."); return x / y; } ) },
         };
 
         public CalculatorFormString()
@@ -28,20 +28,45 @@ namespace Hillel_homework_1
         /// <returns>Результат вычислений.</returns>
         public double Compute(string inputString)
         {
+            var tokensList = Tokenize(SplitInputString(inputString));
+            MathExpressionWritingCheck(tokensList);
+            tokensList = UnaryMinusImplementation(tokensList);
+            var outputStack = ShuntingYardAlgorithm(tokensList);
+            return ReversePolishNotationCompute(outputStack.Reverse().ToList());
+        }
+
+        /// <summary>
+        ///Reverse Polish notation. Массив полученый после выполнения алгоритма Shunting yard.
+        ///Представлет из себя математическое выражение, разбитое на элементы списка, в котором операнды расположены перед знаками операций.
+        ///Цикл вычисления конечного результата происходит по приципу нахождения в массиве знака операции
+        ///и выполнение соответсвущего ему вычислений над двумя предшедствующими значениями.
+        ///Оставшийся элемент в списке является искомым результатом вычислений.
+        /// </summary>
+        /// <param name="tokensList"></param>
+        /// <returns></returns>
+        public double ReversePolishNotationCompute(List<Token> tokensList)
+        {
+            while (tokensList.Count != 1)
+            {
+                int index = tokensList.FindIndex(x => x is Operation);
+                ((Number)tokensList[index - 1]).Value = ((Operation)tokensList[index]).Compute(((Number)tokensList[index - 2]).Value, ((Number)tokensList[index - 1]).Value);
+                tokensList.RemoveAt(index);
+                tokensList.RemoveAt(index - 2);
+            }
+            return ((Number)tokensList[0]).Value;
+        }
+
+        /// <summary>
+        /// Shunting Yard алгоритм. https://en.wikipedia.org/wiki/Shunting_yard_algorithm
+        /// </summary>
+        /// <param name="tokensList"></param>
+        /// <returns>Cтак токенов в формате обратной польской записи.</returns>
+        public Stack<Token> ShuntingYardAlgorithm (List<Token> tokensList)
+        {
             //Стак временного хранения токенов операторов.
             Stack<Token> operatorsStack = new Stack<Token>();
             //Выходной стак токенов в формате обратной польской записи.
             Stack<Token> outputStack = new Stack<Token>();
-
-            //Разбитие входной строки на масив подстрок (из операций, чисел, скобок) используя патерн регулярного выражения.
-            var numbsAndOperationArray = Regex.Split(inputString, @"([\(\)\+\-\*\/])");
-
-            var tokensList = Tokenize(numbsAndOperationArray);
-            MathExpressionWritingCheck(tokensList);
-            tokensList = UnaryMinusImplementation(tokensList);
-
-            //Shunting Yard алгоритм.
-            //https://en.wikipedia.org/wiki/Shunting_yard_algorithm
             foreach (var token in tokensList)
             {
                 if (token.GetType() == typeof(Number))
@@ -77,7 +102,7 @@ namespace Hillel_homework_1
                     }
                     if (operatorsStack.Count == 0)
                     {
-                        throw new Exception("Mismatched parentheses.");
+                        throw new ParenthesisException("Mismatched parentheses.");
                     }
                     else if (operatorsStack.Peek() is Parenthesis parenthesis4
                         && parenthesis4.Orientation == ParenthesisOrientation.Left)
@@ -91,26 +116,22 @@ namespace Hillel_homework_1
             {
                 if (operatorsStack.Peek().GetType() == typeof(Parenthesis))
                 {
-                    throw new Exception("Mismatched parentheses.");
+                    throw new ParenthesisException("Mismatched parentheses.");
                 }
                 outputStack.Push(operatorsStack.Pop());
             }
+            return outputStack;
+        }
 
-            //Reverse Polish notation. Массив полученый после выполнения алгоритма Shunting yard.
-            //Представлет из себя математическое выражение, разбитое на элементы списка, в котором операнды расположены перед знаками операций.
-            var rpn = outputStack.Reverse().ToList();
+        /// <summary>
+        ///Разбитие входной строки на масив подстрок (из операций, чисел, скобок) используя патерн регулярного выражения.
+        /// </summary>
+        /// <param name="inputString"></param>
+        /// <returns>Масив подстрок (из операций, чисел, скобок)</returns>
+        public string[] SplitInputString (string inputString)
+        {
+            return Regex.Split(inputString, @"([\(\)\+\-\*\/])").Where(x => x != String.Empty).ToArray();
 
-            //Цикл вычисления конечного результата. Происходит по приципу нахождения в массиве знака операции
-            //и выполнение соответсвущего ему вычислений над двумя предшедствующими значениями.
-            //Оставшийся элемент в списке является искомым результатом вычислений.
-            while (rpn.Count != 1)
-            {
-                int index = rpn.FindIndex(x => x is Operation);
-                ((Number)rpn[index - 1]).Value = ((Operation)rpn[index]).Compute(((Number)rpn[index - 2]).Value, ((Number)rpn[index - 1]).Value);
-                rpn.RemoveAt(index);
-                rpn.RemoveAt(index - 2);
-            }
-            return ((Number)rpn[0]).Value;
         }
 
         /// <summary>
@@ -118,8 +139,7 @@ namespace Hillel_homework_1
         /// </summary>
         /// <param name="numbsAndOperationArray">Массив елементов мат. выражения (числа, операциий и т.д.) в строчном формате.</param>
         /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        private List<Token> Tokenize(string[] numbsAndOperationArray)
+        public List<Token> Tokenize(string[] numbsAndOperationArray)
         {
             List<Token> tokens = new List<Token>();
             foreach (string futureToken in numbsAndOperationArray)
@@ -146,7 +166,7 @@ namespace Hillel_homework_1
                 }
                 else
                 {
-                    throw new Exception("Invalid input character.");
+                    throw new CalcInvalidInputException();
                 }
             }
             return tokens;
@@ -157,8 +177,7 @@ namespace Hillel_homework_1
         /// (кроме тех, которые проверяются в ходе выполнения Shunting yard алгоритма).
         /// </summary>
         /// <param name="tokensList">Список токенов операций, чисел и др.</param>
-        /// <exception cref="Exception"></exception>
-        private void MathExpressionWritingCheck(List<Token> tokensList)
+        public void MathExpressionWritingCheck(List<Token> tokensList)
         {
             //Знак операции в начале строки (кроме унарного минуса).
             if (tokensList[0] is Operation operation
@@ -167,13 +186,13 @@ namespace Hillel_homework_1
                 //Особый вариант проверки для унарного минуса.
                 (tokensList[1] is Operation)))
             {
-                throw new Exception("Operation sign at the start of the line.");
+                throw new OperationSignAtLineStartException();
             }
 
             //Знак операции в конце строки.
             else if (tokensList[tokensList.Count - 1] is Operation)
             {
-                throw new Exception("Operation sign at the end of the line.");
+                throw new OperationSignAtLineEndException();
             }
 
             for (int i = 1; i < tokensList.Count; i++)
@@ -192,7 +211,7 @@ namespace Hillel_homework_1
                         && tokensList[i - 1] is Operation
                         && tokensList[i - 2] is Operation))
                     {
-                        throw new Exception("Several operation signs in a row");
+                        throw new SeveralOperationInARowException();
                     }
 
                     //Знак операции сразу после открывающей скобки (кроме унарного минуса).
@@ -200,7 +219,7 @@ namespace Hillel_homework_1
                         && parenthesis1.Orientation == ParenthesisOrientation.Left
                         && token.Name != OperationName.Substraction)
                     {
-                        throw new Exception("Operation sign right after opening parenthesis.");
+                        throw new ParenthesisException("Operation sign right after opening parenthesis.");
                     }
 
                     //Знак операции сразу перед закрывающей скобкой.
@@ -208,7 +227,7 @@ namespace Hillel_homework_1
                         && tokensList[i + 1] is Parenthesis parenthesis2
                         && parenthesis2.Orientation == ParenthesisOrientation.Right)
                     {
-                        throw new Exception("Operation sign right before closing parenthesis.");
+                        throw new ParenthesisException("Operation sign right before closing parenthesis.");
                     }
                 }
                 else if (tokensList[i] is Parenthesis parenthesis)
@@ -218,14 +237,14 @@ namespace Hillel_homework_1
                         //Отсутствует знак операции сразу перед открывающей скобкой.
                         if (tokensList[i - 1] is Number)
                         {
-                            throw new Exception("No operation sign before opening parenthesis.");
+                            throw new ParenthesisException("No operation sign before opening parenthesis.");
                         }
 
                         //Отсутствует знак операции между закрывающей и открывающей скобкой.
                         else if (tokensList[i - 1] is Parenthesis parenthesis2
                             && parenthesis2.Orientation == ParenthesisOrientation.Right)
                         {
-                            throw new Exception("No operation sign between closing and opening parentheses or mismatched parentheses.");
+                            throw new ParenthesisException("No operation sign between closing and opening parentheses or mismatched parentheses.");
                         }
                     }
 
@@ -234,7 +253,7 @@ namespace Hillel_homework_1
                         && tokensList?[i - 1] is Parenthesis parenthesis3
                         && parenthesis3.Orientation == ParenthesisOrientation.Left)
                     {
-                        throw new Exception("Empty parentheses.");
+                        throw new ParenthesisException("Empty parentheses.");
                     }
                 }
             }
@@ -245,7 +264,7 @@ namespace Hillel_homework_1
         /// </summary>
         /// <param name="tokensList">Список токенов операций, чисел и др.</param>
         /// <returns>Возвращает модифицированный список с отрицательными (если был найден унарный минус) числами.</returns>
-        private List<Token> UnaryMinusImplementation(List<Token> tokensList)
+        public List<Token> UnaryMinusImplementation(List<Token> tokensList)
         {
             List<int> indexesOfMinus = new List<int>();
 

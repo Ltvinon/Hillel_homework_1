@@ -22,8 +22,15 @@ namespace Hillel_homework_1
         {
             try
             {
+                var resultValue = ReadAndCalculate(Console.ReadLine());
+                var resultString = $"Result: {resultValue}";
+                //Проверка на простое число и добавление инфы, если была успешной
+                if (PrimeChecker.PrimeCheck(resultValue))
+                {
+                    resultString += " - is prime number";
+                }
                 //Вывод результата вычислений(если оно было успешно) в консоль
-                Console.WriteLine($"Result: {ReadAndCalculate(Console.ReadLine()).ToString(CultureInfo.InvariantCulture)}");
+                Console.WriteLine(resultString);
             }
             catch (Exception ex)
             {

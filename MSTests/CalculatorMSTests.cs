@@ -1,4 +1,5 @@
 using Hillel_homework_1;
+using System.Globalization;
 
 namespace MSTests
 {
@@ -10,6 +11,13 @@ namespace MSTests
         [ClassInitialize]
         public static void Initialize(TestContext _)
         {
+            CultureInfo.CurrentCulture = new CultureInfo("en-US")
+            {
+                NumberFormat =
+                {
+                    NumberDecimalSeparator= ".",
+                }
+            };
             _consoleCalc = new ConsoleCalc();
         }
 
@@ -38,6 +46,7 @@ namespace MSTests
         [TestMethod]
         [DataRow("2+2", "Result: 4")]
         [DataRow("999.999", "Result: 999.999")]
+        [DataRow("773", "Result: 773 - is prime number")]
         public void Test_ConsoleIO_IO(string inputText, string expectedRezult)
         {
             TextReader textIn = new StringReader(inputText);

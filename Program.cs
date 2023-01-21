@@ -15,7 +15,7 @@ namespace Hillel_homework_1
                     NumberDecimalSeparator= ".",
                 }
             };
-            ConsoleCalc consoleCalc = new();
+            ConsoleCalc consoleCalc = new(new ConsoleInputOutput());
             consoleCalc.RunCalc();
         }
     }

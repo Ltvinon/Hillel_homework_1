@@ -18,7 +18,7 @@ namespace MSTests
                     NumberDecimalSeparator= ".",
                 }
             };
-            _consoleCalc = new ConsoleCalc();
+            _consoleCalc = new ConsoleCalc(new ConsoleInputOutput());
         }
 
         [TestMethod]
@@ -47,14 +47,14 @@ namespace MSTests
         [DataRow("2+2", "Result: 4")]
         [DataRow("999.999", "Result: 999.999")]
         [DataRow("773", "Result: 773 - is prime number")]
-        public void Test_ConsoleIO_IO(string inputText, string expectedRezult)
+        public void Test_ConsoleCalcIO_IO(string inputText, string expectedRezult)
         {
             TextReader textIn = new StringReader(inputText);
-            Console.SetIn(textIn);
+            Console.SetIn(textIn); 
             StringWriter stringWriter = new();
             Console.SetOut(stringWriter);
 
-            _consoleCalc.ConsoleIO();
+            _consoleCalc.ConsoleCalcIO();
 
             //Локально тест проходит успешно. Github actions фейлится на нём :`(
             //var outputStrings = stringWriter.ToString().Split("\r\n");

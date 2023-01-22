@@ -16,18 +16,19 @@ namespace MSTests
         }
 
         [TestMethod]
-        [DataRow(1, false)]
-        [DataRow(213, false)]
-        [DataRow(-20, false)]
-        [DataRow(0.7, false)]
-        [DataRow(7, true)]
-        [DataRow(743, true)]
-        [DataRow(999.999, false)]
-        public void Test_PrimeChecker_Output(double value, bool expectedResult)
+        [DataRow(1, false, "")]
+        [DataRow(213, false, "")]
+        [DataRow(-20, false, "")]
+        [DataRow(0.7, false, "")]
+        [DataRow(7, true, " - is prime number")]
+        [DataRow(743, true, " - is prime number")]
+        [DataRow(999.999, false, "")]
+        public void Test_PrimeChecker_Output(double value, bool expectedResult, string expectedInfoString)
         {
-            bool result = _primeChecker.Check(value);
+            bool result = _primeChecker.Check(value, out string rezulInfoString);
 
             Assert.AreEqual(expectedResult, result);
+            StringAssert.Equals(rezulInfoString, expectedInfoString);
         }
     }
 }

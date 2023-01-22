@@ -2,6 +2,6 @@
 {
     public interface INumberChecker
     {
-        public bool Check(double value);
+        public bool Check(double value, out string infoString);
     }
 }

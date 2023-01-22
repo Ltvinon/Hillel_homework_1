@@ -21,18 +21,23 @@ namespace MSTests
         }
 
         [TestMethod]
-        [DataRow("2+2", "Result: 4")]
-        [DataRow("999.999", "Result: 999.999")]
-        [DataRow("773", "Result: 773 - is prime number")]
-        public void Test_ConsoleCalcIO_Output(string inputText, string expectedRezult)
+        [DataRow("2+2", "Result: 4", 4, false)]
+        [DataRow("999.999", "Result: 999.999", 999.999, false)]
+        [DataRow("773", "Result: 773 - is prime number", 773, true)]
+        public void Test_ConsoleCalcIO_Output(
+            string inputText, string expectedOutputRezult,
+            double inputNumber, bool expecterCheckRezult)
         {
-            var mock = new Mock<IInputOutput>();
-            mock.Setup(x => x.ReadOneLine()).Returns(inputText);
-            var consoleCalc = new ConsoleCalc(mock.Object);
+            var mockIO = new Mock<IInputOutput>();
+            var mockNCheck = new Mock<INumberChecker>();
+            mockIO.Setup(x => x.ReadOneLine()).Returns(inputText);
+            mockNCheck.Setup(x => x.Check(inputNumber)).Returns(expecterCheckRezult);
+
+            var consoleCalc = new ConsoleCalc(mockIO.Object, mockNCheck.Object);
 
             consoleCalc.ConsoleCalcIO();
 
-            mock.Verify(x => x.WriteOneLine(expectedRezult));
+            mockIO.Verify(x => x.WriteOneLine(expectedOutputRezult));
         }
     }
 }

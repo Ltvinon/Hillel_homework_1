@@ -25,7 +25,7 @@ namespace MSTests
         [DataRow(999.999, false)]
         public void Test_PrimeChecker_Output(double value, bool expectedResult)
         {
-            bool result = _primeChecker.PrimeCheck(value);
+            bool result = _primeChecker.Check(value);
 
             Assert.AreEqual(expectedResult, result);
         }

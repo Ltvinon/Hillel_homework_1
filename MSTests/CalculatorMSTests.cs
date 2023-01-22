@@ -18,7 +18,7 @@ namespace MSTests
                     NumberDecimalSeparator= ".",
                 }
             };
-            _consoleCalc = new ConsoleCalc(new ConsoleInputOutput());
+            _consoleCalc = new ConsoleCalc(new ConsoleInputOutput(), new PrimeChecker());
         }
 
         [TestMethod]
@@ -56,17 +56,7 @@ namespace MSTests
 
             _consoleCalc.ConsoleCalcIO();
 
-            //Локально тест проходит успешно. Github actions фейлится на нём :`(
-            //var outputStrings = stringWriter.ToString().Split("\r\n");
-            //Assert.AreEqual(outputStrings[0], expectedRezult);
-
-            //Первая попытка - :`(
-            //string result = stringWriter.ToString().Split("\r\n")[0];
-            //Assert.AreEqual(result, expectedRezult);
-
-            //Вторая попытка. Озарение. Под линуксом разрыв строки отличается от винды.
-            string result = stringWriter.ToString();
-            StringAssert.Contains(result, expectedRezult);
+            StringAssert.Contains(stringWriter.ToString(), expectedRezult);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Hillel_homework_1
 {
-    public class PrimeChecker
+    public class PrimeChecker : INumberChecker
     {
         public PrimeChecker() { }
 
@@ -16,7 +16,7 @@ namespace Hillel_homework_1
         /// </summary>
         /// <param name="value"></param>
         /// <returns>true если число простое.</returns>
-        public virtual bool PrimeCheck(double value)
+        public bool Check(double value)
         {
             //Проверка на целочисельное
             if (value != (int)value)

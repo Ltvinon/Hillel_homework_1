@@ -6,11 +6,12 @@ namespace Hillel_homework_1
     public class ConsoleCalc
     {
         private IInputOutput _inputOutput;
+        private INumberChecker _primeChecker;
 
-
-        public ConsoleCalc(IInputOutput inputOutput)
+        public ConsoleCalc(IInputOutput inputOutput, INumberChecker primeChecker)
         {
             _inputOutput = inputOutput;
+            _primeChecker = primeChecker;
         }
 
         public void RunCalc()
@@ -33,8 +34,7 @@ namespace Hillel_homework_1
                 var resultValue = ReadAndCalculate(_inputOutput.ReadOneLine());
                 var resultString = $"Result: {resultValue}";
                 //Проверка на простое число и добавление инфы, если была успешной
-                PrimeChecker primeChecker = new PrimeChecker();
-                if (primeChecker.PrimeCheck(resultValue))
+                if (_primeChecker.Check(resultValue))
                 {
                     resultString += " - is prime number";
                 }
